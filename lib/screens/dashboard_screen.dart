@@ -3,6 +3,7 @@ import 'create_invoice_screen.dart';
 import 'history_screen.dart';
 import 'company_profile_screen.dart';
 import 'customer_screen.dart';
+import 'product_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -19,7 +20,11 @@ class DashboardScreen extends StatelessWidget {
         OutlinedButton.icon(icon: const Icon(Icons.history), label: const Text('Invoice History'),
           onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HistoryScreen()))),
         const SizedBox(height: 12),
-        OutlinedButton.icon(icon: const Icon(Icons.people), label: const Text('Customers'), onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerScreen()))),
+        OutlinedButton.icon(icon: const Icon(Icons.people), label: const Text('Customers'),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerScreen()))),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(icon: const Icon(Icons.inventory_2), label: const Text('Products & Services'),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProductScreen()))),
         const SizedBox(height: 12),
         OutlinedButton.icon(icon: const Icon(Icons.business), label: const Text('Company & GSTIN'),
           onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CompanyProfileScreen()))),
