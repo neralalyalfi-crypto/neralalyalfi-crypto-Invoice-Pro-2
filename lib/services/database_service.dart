@@ -18,8 +18,12 @@ class DatabaseService {
         await db.execute('CREATE TABLE invoice_items (id INTEGER PRIMARY KEY AUTOINCREMENT, invoice_id INTEGER NOT NULL, description TEXT NOT NULL, quantity REAL NOT NULL, rate REAL NOT NULL, FOREIGN KEY(invoice_id) REFERENCES invoices(id) ON DELETE CASCADE)');
       },
       onUpgrade: (db, oldVersion, _) async {
-        if (oldVersion < 3) await db.execute('CREATE TABLE customers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, address TEXT, phone TEXT, email TEXT, gstin TEXT)');
-        if (oldVersion < 4) await db.execute('CREATE TABLE products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT, code TEXT, unit TEXT NOT NULL, price REAL NOT NULL, gst_rate REAL NOT NULL)');
+        if (oldVersion < 2) {
+          await db.execute('CREATE TABLE IF NOT EXISTS company (id INTEGER PRIMARY KEY, name TEXT NOT NULL, gstin TEXT, address TEXT, phone TEXT, email TEXT)');
+          await db.insert('company', {'id':1,'name':'My Business','gstin':'','address':'','phone':'','email':''}, conflictAlgorithm: ConflictAlgorithm.ignore);
+        }
+        if (oldVersion < 3) await db.execute('CREATE TABLE IF NOT EXISTS customers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, address TEXT, phone TEXT, email TEXT, gstin TEXT)');
+        if (oldVersion < 4) await db.execute('CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, description TEXT, code TEXT, unit TEXT NOT NULL, price REAL NOT NULL, gst_rate REAL NOT NULL)');
       },
     );
     return _db!;
@@ -51,6 +55,14 @@ class DatabaseService {
       return id;
     });
   }
+  Future<void> deleteInvoice(int id) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.delete('invoice_items', where: 'invoice_id=?', whereArgs: [id]);
+      await txn.delete('invoices', where: 'id=?', whereArgs: [id]);
+    });
+  }
+
   Future<List<Invoice>> getInvoices() async {
     final db=await database; final rows=await db.query('invoices',orderBy:'date DESC,id DESC'); final result=<Invoice>[];
     for(final row in rows){final items=await db.query('invoice_items',where:'invoice_id=?',whereArgs:[row['id']]);result.add(Invoice.fromMap(row,items.map(InvoiceItem.fromMap).toList()));}
